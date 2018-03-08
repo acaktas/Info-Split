@@ -1,13 +1,11 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using ScrapySharp.Extensions;
+using ScrapySharp.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Caching;
-using HtmlAgilityPack;
-using ScrapySharp.Extensions;
-using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
