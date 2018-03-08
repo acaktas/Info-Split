@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Caching;
 using HtmlAgilityPack;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
@@ -12,6 +13,8 @@ namespace InfoWebApp.Scraper
 {
     public class Scraper
     {
+        private static readonly string[] Search = { "Sućidar", "Ivaniševićeva", "Drage Ivaniševića" };
+
         public async Task<List<Article>> Scrape()
         {
             var tasks = new Task<List<Article>>[4];
@@ -31,7 +34,6 @@ namespace InfoWebApp.Scraper
             return articles;
         }
 
-        private static readonly string[] Search = { "Sućidar", "Ivaniševićeva", "Drage Ivaniševića" };
         private static Task<List<Article>> GetNzjzArticles(string url)
         {
             return Task.Run(() =>
