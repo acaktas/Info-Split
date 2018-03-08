@@ -14,12 +14,12 @@ namespace InfoWebApp.Scheduler
 {
     public class ScraperJob : IJob
     {
-        public async Task Execute(IJobExecutionContext context)
+        public void Execute(IJobExecutionContext context)
         {
             var cashedArticles = HttpRuntime.Cache.Get("articles") as List<Article>;
 
             var scraper = new Scraper.Scraper();
-            var scrapedArticles = await scraper.Scrape();
+            var scrapedArticles = scraper.Scrape().GetAwaiter().GetResult();
             var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
 
             foreach (var article in scrapedArticles)
@@ -30,7 +30,7 @@ namespace InfoWebApp.Scheduler
                 sb.Append(article.Title);
                 sb.Append(Environment.NewLine + article.Link);
 
-                await bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"], sb.ToString(), ParseMode.Markdown);
+                bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"], sb.ToString(), ParseMode.Markdown).GetAwaiter().GetResult();
 
                 article.IsSent = true;
                 cashedArticles?.Add(article);

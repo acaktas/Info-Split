@@ -9,14 +9,10 @@ namespace InfoWebApp.Scheduler
     {
         public static void Schedule()
         {
-            var props = new NameValueCollection
-            {
-                { "quartz.serializer.type", "binary" }
-            };
-            var factory = new StdSchedulerFactory(props);
-            
-            var scheduler = factory.GetScheduler().Result;
-            scheduler.Start().Wait();
+            var schedFact = new StdSchedulerFactory();
+
+            var scheduler = schedFact.GetScheduler();
+            scheduler.Start();
             
             var job = JobBuilder.Create<ScraperJob>().Build();
 
@@ -29,7 +25,7 @@ namespace InfoWebApp.Scheduler
                 )
                 .Build();
 
-            scheduler.ScheduleJob(job, trigger).Wait();
+            scheduler.ScheduleJob(job, trigger);
         }
     }
 }
