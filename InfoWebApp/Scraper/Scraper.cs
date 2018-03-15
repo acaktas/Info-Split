@@ -21,12 +21,23 @@ namespace InfoWebApp.Scraper
             tasks[2] = GetNzjzArticles("http://www.nzjz-split.hr/zavod/index.php");
             tasks[3] = GetNzjzArticles("http://www.nzjz-split.hr/zavod/index.php/2016-04-26-12-25-06/istakniti-clanci");
 
-            Task.WaitAll(tasks);
+            try
+            {
+                Task.WaitAll(tasks);
+            }
+            catch
+            {
+                // ignored
+            }
 
             var articles = new List<Article>();
             foreach (var task in tasks)
             {
-                articles.AddRange(task.Result);
+                if (task.Exception == null)
+                {
+                    articles.AddRange(task.Result);
+                }
+                
             }
 
             return articles;
