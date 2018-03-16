@@ -3,10 +3,16 @@ using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using InfoWebApp.DAL;
+using InfoWebApp.Hub;
+using InfoWebApp.Models;
+using Microsoft.AspNet.SignalR;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -16,24 +22,42 @@ namespace InfoWebApp.Scheduler
     {
         public void Execute(IJobExecutionContext context)
         {
-            var cashedArticles = HttpRuntime.Cache.Get("articles") as List<Article>;
-
-            var scraper = new Scraper.Scraper();
-            var scrapedArticles = scraper.Scrape().GetAwaiter().GetResult();
-            var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
-
-            foreach (var article in scrapedArticles)
+            using (var articleContext = new ArticleContext())
             {
-                if (cashedArticles != null && cashedArticles.Any(a => a.Equals(article))) continue;
+                var scraper = new Scraper.Scraper();
+                var scrapedArticles = scraper.Scrape().GetAwaiter().GetResult();
+                var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
+                var hub = GlobalHost.ConnectionManager.GetHubContext<ArticleHub>();
 
-                var sb = new StringBuilder();
-                sb.Append(article.Title);
-                sb.Append(Environment.NewLine + article.Link);
+                var thirtyDaysAgo = DateTime.Now.AddDays(-30);
 
-                bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"], sb.ToString(), ParseMode.Markdown).GetAwaiter().GetResult();
+                var cashedArticles = articleContext.Articles.Where(a =>
+                    DbFunctions.TruncateTime(a.UpdateDateTime) >= DbFunctions.TruncateTime(thirtyDaysAgo)
+                    || DbFunctions.TruncateTime(a.CreatedDateTime) >= DbFunctions.TruncateTime(thirtyDaysAgo)).ToList();
 
-                article.IsSent = true;
-                cashedArticles?.Add(article);
+                foreach (var article in scrapedArticles)
+                {
+                    if (cashedArticles.Any(a => a.Equals(article))) continue;
+
+                    var sb = new StringBuilder();
+                    sb.Append(article.Title);
+                    sb.Append(Environment.NewLine + article.Link);
+
+                    if (Convert.ToBoolean(ConfigurationManager.AppSettings["telegramBotEnabled"]))
+                    {
+                        bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"],
+                            sb.ToString(),
+                            ParseMode.Markdown).GetAwaiter().GetResult();
+
+                        article.IsSent = true;
+                    }
+
+                    articleContext.Articles.Add(article);
+                    
+                    hub.Clients.All.AddNewMessageToPage("new article", article);
+                }
+
+                articleContext.SaveChanges();
             }
         }
     }

@@ -2,10 +2,12 @@
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InfoWebApp.Models;
 
 namespace InfoWebApp.Scraper
 {
@@ -33,11 +35,16 @@ namespace InfoWebApp.Scraper
             var articles = new List<Article>();
             foreach (var task in tasks)
             {
-                if (task.Exception == null)
+                if (task.Exception != null) continue;
+
+                foreach (var article in task.Result)
                 {
-                    articles.AddRange(task.Result);
+                    if (!articles.Any(a=>a.Equals(article)))
+                    {
+                        articles.Add(article);
+                    }
                 }
-                
+
             }
 
             return articles;
@@ -90,7 +97,7 @@ namespace InfoWebApp.Scraper
                     var existingArticle = articles.FirstOrDefault(a => a.Title == title);
                     if (existingArticle != null)
                     {
-                        if (existingArticle.Hash == hash) continue;
+                        if (StructuralComparisons.StructuralEqualityComparer.Equals(existingArticle.Hash, hash)) continue;
 
                         existingArticle.Text = text;
                         existingArticle.UpdateDateTime = DateTime.Now;
@@ -106,7 +113,8 @@ namespace InfoWebApp.Scraper
                             CreatedDateTime = DateTime.Now,
                             Text = text,
                             UpdateDateTime = DateTime.Now,
-                            IsAlert = isAlert
+                            IsAlert = isAlert,
+                            ArticleType = ArticleType.Nzjz
                         });
                     }
                 }
@@ -160,10 +168,10 @@ namespace InfoWebApp.Scraper
 
                     var hash = Article.GetHash(text);
 
-                    var existingArticle = articles.FirstOrDefault(a => a.Date.Date == date.Date && a.Title == title);
+                    var existingArticle = articles.FirstOrDefault(a => a.Date?.Date == date.Date && a.Title == title);
                     if (existingArticle != null)
                     {
-                        if (existingArticle.Hash == hash) continue;
+                        if (StructuralComparisons.StructuralEqualityComparer.Equals(existingArticle.Hash, hash)) continue;
 
                         existingArticle.Text = text;
                         existingArticle.UpdateDateTime = DateTime.Now;
@@ -180,7 +188,8 @@ namespace InfoWebApp.Scraper
                             CreatedDateTime = DateTime.Now,
                             Text = text,
                             UpdateDateTime = DateTime.Now,
-                            IsAlert = isAlert
+                            IsAlert = isAlert,
+                            ArticleType = ArticleType.Vik
                         });
                     }
                 }

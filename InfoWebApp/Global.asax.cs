@@ -7,6 +7,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using InfoWebApp.Scraper;
 using System.Web;
+using InfoWebApp.Models;
 
 namespace InfoWebApp
 {
@@ -19,8 +20,6 @@ namespace InfoWebApp
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             JobScheduler.Schedule();
-            
-            HttpRuntime.Cache.Insert("articles", new List<Article>());
         }
     }
 }

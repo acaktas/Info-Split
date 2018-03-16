@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Threading.Tasks;
 using Quartz;
 using Quartz.Impl;
@@ -20,7 +22,7 @@ namespace InfoWebApp.Scheduler
                 .WithIdentity("trigger1", "group1")
                 .StartNow()
                 .WithSimpleSchedule(s => s
-                    .WithIntervalInMinutes(1)
+                    .WithIntervalInMinutes(Convert.ToInt32(ConfigurationManager.AppSettings["schedulerIntervalMinutes"]))
                     .RepeatForever()
                 )
                 .Build();

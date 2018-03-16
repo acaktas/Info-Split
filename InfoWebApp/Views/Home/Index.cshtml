@@ -1,31 +1,77 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
+﻿@using InfoWebApp.Models
+@using InfoWebApp.Scraper
+@model List<InfoWebApp.Models.Article>
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-
+    <div class="jumbotron">
+        <p class="lead">Objave sa "Vodovod i kanalizacija" i "Nastavnog zavoda za javno zdravstvo"</p>
+    </div>
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
+
+    <section class="content">
+        <h1>Objave</h1>
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="table-container">
+                        <table class="table table-filter">
+                            <tbody>
+                            @foreach (var item in Model)
+                            {
+                                string color = "";
+                                switch (item.ArticleType)
+                                {
+                                    case ArticleType.Vik: color = "#F0F8FF"; break;
+                                    case ArticleType.Nzjz: color = "#FFFACD"; break;
+                                }
+                                <tr>
+                                    <td style="background-color: @color;">
+                                        <div class="media">
+                                            <div class="media-body">
+                                                <span class="media-meta pull-right">@Html.DisplayFor(modelItem => item.UpdateDateTime)</span>
+                                                <h4 class="title">
+                                                    @Html.DisplayFor(modelItem => item.Title)
+                                                    @*<span class="pull-right pagado">(Pagado)</span>*@
+                                                </h4>
+                                                <p class="summary">@Html.DisplayFor(modelItem => item.ShortText)</p>
+                                                <p><a href='@item.Link'>Više...</a></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/jquerysignalr")
+<script src="~/signalr/hubs"></script>
+
+<script type="text/javascript">
+    var articleHubProxy = $.connection.ArticleHub;
+    
+    articleHubProxy.client.addNewMessageToPage = function (name, article) {
+        console.log(article);
+        $('.table tbody').append('<tr><td style="background-color: #f9c2b8;"> ' +
+            '<div class="media"> ' +
+            '<div class="media-body"> ' +
+            '<span class="media-meta pull-right">' + new Date(article.UpdateDateTime).toLocaleDateString() + '</span>' +
+            '<h4 class="title">' +
+             article.ShortText + 
+            '</h4>' +
+            '<p class="summary">' + article.ShortText + ')</p>' +
+            '<p><a href="' + article.Link +'">Više...</a></p>' +
+                '</div>' +
+                '</div>' +
+            '</td></tr>');
+    };
+
+    $.connection.hub.start().done(function () {
+        console.log('Notification hub started');
+    });
+</script>
