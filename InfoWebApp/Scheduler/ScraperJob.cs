@@ -1,18 +1,12 @@
-﻿using InfoWebApp.Scraper;
+﻿using InfoWebApp.DAL;
+using InfoWebApp.Hub;
+using Microsoft.AspNet.SignalR;
 using Quartz;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using InfoWebApp.DAL;
-using InfoWebApp.Hub;
-using InfoWebApp.Models;
-using Microsoft.AspNet.SignalR;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -40,7 +34,7 @@ namespace InfoWebApp.Scheduler
                     if (cashedArticles.Any(a => a.Equals(article))) continue;
 
                     var sb = new StringBuilder();
-                    sb.Append(article.Title);
+                    sb.Append(article.ArticleType + " - " + article.Title);
                     sb.Append(Environment.NewLine + article.Link);
 
                     if (Convert.ToBoolean(ConfigurationManager.AppSettings["telegramBotEnabled"]))

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -53,7 +54,11 @@ namespace InfoWebApp.Models
 
     public enum ArticleType
     {
+        [Description("Vodovod i kanalizacija")]
         Vik,
-        Nzjz
+        [Description("Nastavni zavod za javno zdravstvo")]
+        Nzjz,
+        [Description("Elektrodalmacija")]
+        Hep
     }
 }

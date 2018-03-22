@@ -3,7 +3,7 @@
 @model List<InfoWebApp.Models.Article>
 
     <div class="jumbotron">
-        <p class="lead">Objave sa "Vodovod i kanalizacija" i "Nastavnog zavoda za javno zdravstvo"</p>
+        <p class="lead">Objave sa "Vodovoda i kanalizacije", "Nastavnog zavoda za javno zdravstvo" i "Elektrodalmacije"</p>
     </div>
 <div class="row">
 
@@ -29,6 +29,7 @@
                                             <div class="media-body">
                                                 <span class="media-meta pull-right">@Html.DisplayFor(modelItem => item.UpdateDateTime)</span>
                                                 <h4 class="title">
+                                                    @Html.DisplayFor(modelItem => item.ArticleType) - 
                                                     @Html.DisplayFor(modelItem => item.Title)
                                                     @*<span class="pull-right pagado">(Pagado)</span>*@
                                                 </h4>
@@ -62,7 +63,7 @@
             '<div class="media-body"> ' +
             '<span class="media-meta pull-right">' + new Date(article.UpdateDateTime).toLocaleDateString() + '</span>' +
             '<h4 class="title">' +
-             article.ShortText + 
+             article.Title + 
             '</h4>' +
             '<p class="summary">' + article.ShortText + ')</p>' +
             '<p><a href="' + article.Link +'">Više...</a></p>' +

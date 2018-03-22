@@ -209,7 +209,10 @@
     <Compile Include="Scheduler\JobScheduler.cs" />
     <Compile Include="Scheduler\ScraperJob.cs" />
     <Compile Include="Models\Article.cs" />
+    <Compile Include="Scraper\HepScraper.cs" />
+    <Compile Include="Scraper\NzjzScraper.cs" />
     <Compile Include="Scraper\Scraper.cs" />
+    <Compile Include="Scraper\VikScraper.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
