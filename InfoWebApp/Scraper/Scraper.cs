@@ -12,15 +12,18 @@ namespace InfoWebApp.Scraper
 
         public async Task<List<Article>> Scrape()
         {
-            var nzjzScraper = new NzjzScraper(Search);
-            var vikScraper = new VikScraper(Search);
-            var hepScraper = new HepScraper(Search);
-
             var tasks = new List<Task<List<Article>>>();
-            //tasks.AddRange(vikScraper.Scrape());
-            //tasks.AddRange(nzjzScraper.Scrape());
-            tasks.AddRange(hepScraper.Scrape());
 
+            var scrapers = new List<IScraper>();
+            scrapers.Add(new NzjzScraper(Search));
+            scrapers.Add(new VikScraper(Search));
+            scrapers.Add(new HepScraper(Search));
+
+            foreach (var scraper in scrapers)
+            {
+                tasks.AddRange(scraper.Scrape());
+            }
+            
             try
             {
                 Task.WaitAll(tasks.ToArray());

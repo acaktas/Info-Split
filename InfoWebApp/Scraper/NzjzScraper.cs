@@ -10,7 +10,7 @@ using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class NzjzScraper
+    public class NzjzScraper : IScraper
     {
         private static string[] _search;
 

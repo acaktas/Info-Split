@@ -11,7 +11,7 @@ using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class VikScraper
+    public class VikScraper : IScraper
     {
         private readonly string[] _search;
 

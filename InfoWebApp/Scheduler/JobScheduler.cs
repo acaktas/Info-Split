@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.Configuration;
-using System.Threading.Tasks;
-using Quartz;
+﻿using Quartz;
 using Quartz.Impl;
+using System;
+using System.Configuration;
 
 namespace InfoWebApp.Scheduler
 {

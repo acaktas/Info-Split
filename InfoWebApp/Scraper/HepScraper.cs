@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 using InfoWebApp.Models;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class HepScraper
+    public class HepScraper : IScraper
     {
         private readonly string[] _search;
 
