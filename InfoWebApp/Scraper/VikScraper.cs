@@ -11,16 +11,9 @@ using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class VikScraper : IScraper
+    public class VikScraper : BaseScraper
     {
-        private readonly string[] _search;
-
-        public VikScraper(string[] search)
-        {
-            _search = search;
-        }
-
-        public Task<List<Article>>[] Scrape()
+        public override Task<List<Article>>[] Scrape()
         {
             var tasks = new Task<List<Article>>[2];
             tasks[0] = GetArticles("http://www.vik-split.hr/aktualnosti/novosti");
@@ -70,34 +63,7 @@ namespace InfoWebApp.Scraper
                         // ignored
                     }
 
-                    var isAlert = _search.Any(word => text.ToLowerInvariant().Contains(word.ToLowerInvariant()));
-
-                    var hash = Article.GetHash(text);
-
-                    var existingArticle = articles.FirstOrDefault(a => a.Date?.Date == date.Date && a.Title == title);
-                    if (existingArticle != null)
-                    {
-                        if (StructuralComparisons.StructuralEqualityComparer.Equals(existingArticle.Hash, hash)) continue;
-
-                        existingArticle.Text = text;
-                        existingArticle.UpdateDateTime = DateTime.Now;
-                        existingArticle.IsAlert = isAlert;
-                    }
-                    else
-                    {
-                        articles.Add(new Article()
-                        {
-                            Title = title,
-                            ShortText = shortText,
-                            Link = link.Value,
-                            Date = date,
-                            CreatedDateTime = DateTime.Now,
-                            Text = text,
-                            UpdateDateTime = DateTime.Now,
-                            IsAlert = isAlert,
-                            ArticleType = ArticleType.Vik
-                        });
-                    }
+                    CreateArticle(text, articles, title, shortText, link.Value, ArticleType.Vik, date);
                 }
 
                 return articles;

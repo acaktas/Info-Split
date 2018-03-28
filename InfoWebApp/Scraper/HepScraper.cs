@@ -10,16 +10,9 @@ using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class HepScraper : IScraper
+    public class HepScraper : BaseScraper
     {
-        private readonly string[] _search;
-
-        public HepScraper(string[] search)
-        {
-            _search = search;
-        }
-
-        public Task<List<Article>>[] Scrape()
+        public override Task<List<Article>>[] Scrape()
         {
             var tasks = new Task<List<Article>>[1];
             tasks[0] = GetArticles("http://www.hep.hr/ods/ostalo/poveznice/bez-struje/19?dp=split");
@@ -59,36 +52,8 @@ namespace InfoWebApp.Scraper
                         .Replace("&quot;", "\"").Replace('\t'.ToString(), "").Replace("    ", "");
 
                     var text = shortText;
-
-                    var isAlert = _search.Any(word => text.ToLowerInvariant().Contains(word.ToLowerInvariant()));
-
-                    var hash = Article.GetHash(text);
-
-                    var existingArticle = articles.FirstOrDefault(a => a.Date?.Date == date.Date && a.Title == title);
-                    if (existingArticle != null)
-                    {
-                        if (StructuralComparisons.StructuralEqualityComparer.Equals(existingArticle.Hash, hash))
-                            continue;
-
-                        existingArticle.Text = text;
-                        existingArticle.UpdateDateTime = DateTime.Now;
-                        existingArticle.IsAlert = isAlert;
-                    }
-                    else
-                    {
-                        articles.Add(new Article()
-                        {
-                            Title = title,
-                            ShortText = shortText,
-                            Link = link,
-                            Date = date,
-                            CreatedDateTime = DateTime.Now,
-                            Text = text,
-                            UpdateDateTime = DateTime.Now,
-                            IsAlert = isAlert,
-                            ArticleType = ArticleType.Hep
-                        });
-                    }
+                    
+                    CreateArticle(text, articles, title, shortText, link, ArticleType.Hep, DateTime.Now);
                 }
 
                 return articles;

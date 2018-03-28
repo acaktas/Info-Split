@@ -10,16 +10,9 @@ using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
-    public class NzjzScraper : IScraper
+    public class NzjzScraper : BaseScraper
     {
-        private static string[] _search;
-
-        public NzjzScraper(string[] search)
-        {
-            _search = search;
-        }
-
-        public Task<List<Article>>[] Scrape()
+        public override Task<List<Article>>[] Scrape()
         {
             var tasks = new Task<List<Article>>[2];
             tasks[0] = GetArticles("http://www.nzjz-split.hr/zavod/index.php");
@@ -27,7 +20,7 @@ namespace InfoWebApp.Scraper
             return tasks;
         }
 
-        private static Task<List<Article>> GetArticles(string url)
+        private Task<List<Article>> GetArticles(string url)
         {
             return Task.Run(() =>
             {
@@ -67,33 +60,7 @@ namespace InfoWebApp.Scraper
                         // ignored
                     }
 
-                    var isAlert = _search.Any(word => text.ToLowerInvariant().Contains(word.ToLowerInvariant()));
-
-                    var hash = Article.GetHash(text);
-
-                    var existingArticle = articles.FirstOrDefault(a => a.Title == title);
-                    if (existingArticle != null)
-                    {
-                        if (StructuralComparisons.StructuralEqualityComparer.Equals(existingArticle.Hash, hash)) continue;
-
-                        existingArticle.Text = text;
-                        existingArticle.UpdateDateTime = DateTime.Now;
-                        existingArticle.IsAlert = isAlert;
-                    }
-                    else
-                    {
-                        articles.Add(new Article()
-                        {
-                            Title = title,
-                            ShortText = shortText,
-                            Link = link,
-                            CreatedDateTime = DateTime.Now,
-                            Text = text,
-                            UpdateDateTime = DateTime.Now,
-                            IsAlert = isAlert,
-                            ArticleType = ArticleType.Nzjz
-                        });
-                    }
+                    CreateArticle(text, articles, title, shortText, link, ArticleType.Nzjz, DateTime.Now);
                 }
 
                 return articles;

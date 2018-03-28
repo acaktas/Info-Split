@@ -1,54 +1,92 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls.Expressions;
+using InfoWebApp.DAL;
+using InfoWebApp.Hub;
 using InfoWebApp.Models;
+using Microsoft.AspNet.SignalR;
+using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace InfoWebApp.Scraper
 {
     public class Scraper
-    {
-        private static readonly string[] Search = { "Sućidar", "Ivaniševićeva", "Drage Ivaniševića" };
-
-        public async Task<List<Article>> Scrape()
+    { 
+        public async Task Scrape()
         {
             var tasks = new List<Task<List<Article>>>();
 
-            var scrapers = new List<IScraper>();
-            scrapers.Add(new NzjzScraper(Search));
-            scrapers.Add(new VikScraper(Search));
-            scrapers.Add(new HepScraper(Search));
+            var scrapers = new List<BaseScraper>();
+            scrapers.Add(new NzjzScraper());
+            scrapers.Add(new VikScraper());
+            scrapers.Add(new HepScraper());
 
             foreach (var scraper in scrapers)
             {
                 tasks.AddRange(scraper.Scrape());
             }
-            
+
             try
             {
-                Task.WaitAll(tasks.ToArray());
+                while (tasks.Count > 0)
+                {
+                    var task = await Task.WhenAny(tasks);
+                    tasks.Remove(task);
+                    SaveAndNotifyArticles(task);
+                }
             }
             catch
             {
                 // ignored
             }
+        }
 
-            var articles = new List<Article>();
-            foreach (var task in tasks)
+        private static async void SaveAndNotifyArticles(Task<List<Article>> task)
+        {
+            if (task.Exception != null) return;
+
+            IEnumerable<Article> scrapedArticles = task.Result;
+            
+            var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
+            var hub = GlobalHost.ConnectionManager.GetHubContext<ArticleHub>();
+
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+
+            using (var articleContext = new ArticleContext())
             {
-                if (task.Exception != null) continue;
+                var cashedArticles = articleContext.Articles.Where(a =>
+                    DbFunctions.TruncateTime(a.UpdateDateTime) >= DbFunctions.TruncateTime(thirtyDaysAgo)
+                    || DbFunctions.TruncateTime(a.CreatedDateTime) >= DbFunctions.TruncateTime(thirtyDaysAgo)).ToList();
 
-                foreach (var article in task.Result)
+                foreach (var article in scrapedArticles)
                 {
-                    if (!articles.Any(a=>a.Equals(article)))
+                    if (cashedArticles.Any(a => a.Equals(article))) continue;
+
+                    var sb = new StringBuilder();
+                    sb.Append(article.ArticleType + " - " + article.Title);
+                    sb.Append(Environment.NewLine + article.Link);
+
+                    if (Convert.ToBoolean(ConfigurationManager.AppSettings["telegramBotEnabled"]))
                     {
-                        articles.Add(article);
+                        await bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"],
+                            sb.ToString(),
+                            ParseMode.Markdown);
+
+                        article.IsSent = true;
                     }
+
+                    articleContext.Articles.Add(article);
+
+                    hub.Clients.All.AddNewMessageToPage("new article", article);
                 }
 
+                articleContext.SaveChanges();
             }
-
-            return articles;
         }
     }
 }
