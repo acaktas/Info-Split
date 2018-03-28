@@ -1,27 +1,21 @@
-﻿using System;
-using System.Collections;
+﻿using HtmlAgilityPack;
+using InfoWebApp.Models;
+using ScrapySharp.Extensions;
+using ScrapySharp.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using InfoWebApp.Models;
-using ScrapySharp.Extensions;
-using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
     public class VikScraper : BaseScraper
     {
-        public override Task<List<Article>>[] Scrape()
-        {
-            var tasks = new Task<List<Article>>[2];
-            tasks[0] = GetArticles("http://www.vik-split.hr/aktualnosti/novosti");
-            tasks[1] = GetArticles("http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe");
-            return tasks;
-        }
+        public VikScraper() : base(new[] { "http://www.vik-split.hr/aktualnosti/novosti", "http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe" })
+        { }
 
-        private Task<List<Article>> GetArticles(string url)
+        public override Task<List<Article>> GetArticles(string url)
         {
             return Task.Run(() =>
             {

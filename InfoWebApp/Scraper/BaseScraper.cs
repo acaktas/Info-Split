@@ -10,7 +10,24 @@ namespace InfoWebApp.Scraper
     public abstract class BaseScraper
     {
         public readonly string[] Search = { "Sućidar", "Ivaniševićeva", "Drage Ivaniševića" };
-        public abstract Task<List<Article>>[] Scrape();
+        private readonly string[] _links;
+
+        protected BaseScraper(string[] links)
+        {
+            _links = links;
+        }
+
+        public abstract Task<List<Article>> GetArticles(string url);
+
+        public Task<List<Article>>[] Scrape()
+        {
+            var tasks = new Task<List<Article>>[_links.Length];
+            for (var i = 0; i < _links.Length; i++)
+            {
+                tasks[i] = GetArticles(_links[i]);
+            }
+            return tasks;
+        }
 
         protected void CreateArticle(string text, List<Article> articles, string title,
             string shortText, string link, ArticleType articleType, DateTime date)

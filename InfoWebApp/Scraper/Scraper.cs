@@ -1,4 +1,8 @@
-﻿using System;
+﻿using InfoWebApp.DAL;
+using InfoWebApp.Hub;
+using InfoWebApp.Models;
+using Microsoft.AspNet.SignalR;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
@@ -6,10 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls.Expressions;
-using InfoWebApp.DAL;
-using InfoWebApp.Hub;
-using InfoWebApp.Models;
-using Microsoft.AspNet.SignalR;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -20,16 +20,9 @@ namespace InfoWebApp.Scraper
         public async Task Scrape()
         {
             var tasks = new List<Task<List<Article>>>();
-
-            var scrapers = new List<BaseScraper>();
-            scrapers.Add(new NzjzScraper());
-            scrapers.Add(new VikScraper());
-            scrapers.Add(new HepScraper());
-
-            foreach (var scraper in scrapers)
-            {
-                tasks.AddRange(scraper.Scrape());
-            }
+            tasks.AddRange(new NzjzScraper().Scrape());
+            tasks.AddRange(new VikScraper().Scrape());
+            tasks.AddRange(new HepScraper().Scrape());
 
             try
             {

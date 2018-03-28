@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections;
+﻿using InfoWebApp.Models;
+using ScrapySharp.Extensions;
+using ScrapySharp.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using InfoWebApp.Models;
-using ScrapySharp.Extensions;
-using ScrapySharp.Network;
 
 namespace InfoWebApp.Scraper
 {
     public class NzjzScraper : BaseScraper
     {
-        public override Task<List<Article>>[] Scrape()
-        {
-            var tasks = new Task<List<Article>>[2];
-            tasks[0] = GetArticles("http://www.nzjz-split.hr/zavod/index.php");
-            tasks[1] = GetArticles("http://www.nzjz-split.hr/zavod/index.php/2016-04-26-12-25-06/istakniti-clanci");
-            return tasks;
-        }
+        public NzjzScraper() : base(new[] { "http://www.nzjz-split.hr/zavod/index.php", "http://www.nzjz-split.hr/zavod/index.php/2016-04-26-12-25-06/istakniti-clanci" })
+        { }
 
-        private Task<List<Article>> GetArticles(string url)
+        public override Task<List<Article>> GetArticles(string url)
         {
             return Task.Run(() =>
             {
@@ -60,7 +54,7 @@ namespace InfoWebApp.Scraper
                         // ignored
                     }
 
-                    CreateArticle(text, articles, title, shortText, link, ArticleType.Nzjz, DateTime.Now);
+                    CreateArticle(text, articles, title, shortText, link, ArticleType.Nzjz, Convert.ToDateTime(DateTime.Today));
                 }
 
                 return articles;
