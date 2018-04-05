@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 /InfoWebApp/Properties/PublishProfiles
+/InfoWebApp/Web.config

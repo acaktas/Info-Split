@@ -24,6 +24,8 @@ namespace InfoWebApp.Models
 
         public static byte[] GetHash(string inputString)
         {
+            if (inputString == "") return new byte[0];
+
             using (var sha = new SHA256Managed())
             {
                 var textData = Encoding.UTF8.GetBytes(inputString);
@@ -43,7 +45,16 @@ namespace InfoWebApp.Models
 
         public override bool Equals(object obj)
         {
-            return obj is Article articleObj && StructuralComparisons.StructuralEqualityComparer.Equals(Hash, articleObj.Hash);
+            if (!(obj is Article article)) return false;
+
+            if (article.Hash.Length != 0)
+            {
+                return StructuralComparisons.StructuralEqualityComparer.Equals(Hash, article.Hash);
+            }
+
+            return article.Title == Title && article.Date == Date;
+
+            //return obj is Article articleObj && (articleObj.Hash.Length != 0 && StructuralComparisons.StructuralEqualityComparer.Equals(Hash, articleObj.Hash));
         }
 
         public override int GetHashCode()
@@ -59,6 +70,8 @@ namespace InfoWebApp.Models
         [Description("Nastavni zavod za javno zdravstvo")]
         Nzjz,
         [Description("Elektrodalmacija")]
-        Hep
+        Hep,
+        [Description("Agencija za pravni promet i posredovanje nekretninama")]
+        Apn
     }
 }

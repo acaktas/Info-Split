@@ -20,9 +20,10 @@ namespace InfoWebApp.Scraper
         public async Task Scrape()
         {
             var tasks = new List<Task<List<Article>>>();
-            tasks.AddRange(new NzjzScraper().Scrape());
-            tasks.AddRange(new VikScraper().Scrape());
-            tasks.AddRange(new HepScraper().Scrape());
+            //tasks.AddRange(new NzjzScraper().Scrape());
+            //tasks.AddRange(new VikScraper().Scrape());
+            //tasks.AddRange(new HepScraper().Scrape());
+            tasks.AddRange(new APNScraper().Scrape());
 
             try
             {
@@ -44,7 +45,7 @@ namespace InfoWebApp.Scraper
             if (task.Exception != null) return;
 
             IEnumerable<Article> scrapedArticles = task.Result;
-            
+
             var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
             var hub = GlobalHost.ConnectionManager.GetHubContext<ArticleHub>();
 
