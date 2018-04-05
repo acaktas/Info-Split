@@ -7,16 +7,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
 namespace InfoWebApp.Scraper
 {
     public class VikScraper : BaseScraper
     {
-        public VikScraper() : base(new[] { "http://www.vik-split.hr/aktualnosti/novosti", "http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe" })
-        { }
+        private readonly ILog _log;
+
+        public VikScraper(ILog log) : base(new[]
+        {
+            "http://www.vik-split.hr/aktualnosti/novosti",
+            "http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe"
+        })
+        {
+            _log = log;
+        }
 
         public override Task<List<Article>> GetArticles(string url)
         {
+            _log.Info("VikScraper scraping " + url);
+
             return Task.Run(() =>
             {
                 var articles = new List<Article>();
@@ -52,10 +63,12 @@ namespace InfoWebApp.Scraper
                                 (current, psDetail) => current + (psDetail.InnerText + Environment.NewLine))
                             .Replace("&nbsp;", " ").Replace("&quot;", "\"");
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        _log.Error("VikScraper error: " + ex.Message + Environment.NewLine + ex.StackTrace);
                     }
+
+                    _log.Info("VikScraper Creating " + title);
 
                     CreateArticle(text, articles, title, shortText, link.Value, ArticleType.Vik, date);
                 }

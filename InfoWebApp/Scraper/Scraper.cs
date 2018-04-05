@@ -16,14 +16,18 @@ using Telegram.Bot.Types.Enums;
 namespace InfoWebApp.Scraper
 {
     public class Scraper
-    { 
+    {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public async Task Scrape()
         {
+
+            log.Info("Scraper started");
+
             var tasks = new List<Task<List<Article>>>();
-            //tasks.AddRange(new NzjzScraper().Scrape());
-            //tasks.AddRange(new VikScraper().Scrape());
-            //tasks.AddRange(new HepScraper().Scrape());
-            tasks.AddRange(new APNScraper().Scrape());
+            tasks.AddRange(new ApnScraper(log).Scrape());
+            tasks.AddRange(new NzjzScraper(log).Scrape());
+            tasks.AddRange(new VikScraper(log).Scrape());
+            tasks.AddRange(new HepScraper(log).Scrape());
 
             try
             {
@@ -34,10 +38,12 @@ namespace InfoWebApp.Scraper
                     SaveAndNotifyArticles(task);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                log.Error("Scraper error: " + ex.Message + Environment.NewLine + ex.StackTrace);
             }
+
+            log.Info("Scraper ended");
         }
 
         private static async void SaveAndNotifyArticles(Task<List<Article>> task)
@@ -45,6 +51,8 @@ namespace InfoWebApp.Scraper
             if (task.Exception != null) return;
 
             IEnumerable<Article> scrapedArticles = task.Result;
+
+            log.Info("Found " + scrapedArticles.Count() + " from " + scrapedArticles.FirstOrDefault()?.ArticleType);
 
             var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
             var hub = GlobalHost.ConnectionManager.GetHubContext<ArticleHub>();
@@ -59,7 +67,11 @@ namespace InfoWebApp.Scraper
 
                 foreach (var article in scrapedArticles)
                 {
-                    if (cashedArticles.Any(a => a.Equals(article))) continue;
+                    if (cashedArticles.Any(a => a.Equals(article)))
+                    {
+                        log.Info("Skipping article: " + article.Title);
+                        continue;
+                    }
 
                     var sb = new StringBuilder();
                     sb.Append(article.ArticleType + " - " + article.Title);
@@ -71,10 +83,14 @@ namespace InfoWebApp.Scraper
                             sb.ToString(),
                             ParseMode.Markdown);
 
+                        log.Info("Message sent for article: " + article.Title);
+
                         article.IsSent = true;
                     }
 
                     articleContext.Articles.Add(article);
+
+                    log.Info("Added article: " + article.Title);
 
                     hub.Clients.All.AddNewMessageToPage("new article", article);
                 }

@@ -1,22 +1,29 @@
-﻿using System;
+﻿using InfoWebApp.Models;
+using ScrapySharp.Extensions;
+using ScrapySharp.Network;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using InfoWebApp.Models;
-using ScrapySharp.Extensions;
-using ScrapySharp.Network;
+using log4net;
 
 namespace InfoWebApp.Scraper
 {
-    public class APNScraper : BaseScraper
+    public class ApnScraper : BaseScraper
     {
-        public APNScraper() : base(new[] { "http://apn.hr/subvencionirani-stambeni-krediti/novosti" })
-        { }
+        private readonly ILog _log;
+
+        public ApnScraper(ILog log) : base(new[] {"http://apn.hr/subvencionirani-stambeni-krediti/novosti"})
+        {
+            _log = log;
+        }
 
         public override Task<List<Article>> GetArticles(string url)
         {
+            _log.Info("ApnScraper scraping " + url);
+
             return Task.Run(() =>
             {
                 var articles = new List<Article>();
@@ -38,7 +45,9 @@ namespace InfoWebApp.Scraper
                     var link = pageArticle.Attributes["href"].Value;
 
                     var time = pageArticle.CssSelect("p.news__date").Single();
-                    var date = Convert.ToDateTime(time.InnerText);
+
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("hr-HR");
+                    var date = DateTime.Parse(time.InnerText);
 
                     var shortText = "";
                     var psShortTexts = pageArticle.CssSelect("h3.news__title");
@@ -53,14 +62,16 @@ namespace InfoWebApp.Scraper
                         text = psDetails.Aggregate(text,
                             (current, psDetail) => current + (psDetail.InnerText + Environment.NewLine)).Replace("&nbsp;", " ");
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        _log.Error("ApnScraper error: " + ex.Message + Environment.NewLine + ex.StackTrace);
                     }
+
+                    _log.Info("ApnScraper Creating " + title);
 
                     CreateArticle(text, articles, title, shortText, link, ArticleType.Apn, date);
                 }
-
+            
                 return articles;
             });
         }

@@ -53,8 +53,6 @@ namespace InfoWebApp.Models
             }
 
             return article.Title == Title && article.Date == Date;
-
-            //return obj is Article articleObj && (articleObj.Hash.Length != 0 && StructuralComparisons.StructuralEqualityComparer.Equals(Hash, articleObj.Hash));
         }
 
         public override int GetHashCode()

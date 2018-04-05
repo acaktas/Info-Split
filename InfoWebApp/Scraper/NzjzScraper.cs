@@ -6,16 +6,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
 namespace InfoWebApp.Scraper
 {
     public class NzjzScraper : BaseScraper
     {
-        public NzjzScraper() : base(new[] { "http://www.nzjz-split.hr/zavod/index.php", "http://www.nzjz-split.hr/zavod/index.php/2016-04-26-12-25-06/istakniti-clanci" })
-        { }
+        private readonly ILog _log;
+
+        public NzjzScraper(ILog log) : base(new[]
+        {
+            "http://www.nzjz-split.hr/zavod/index.php",
+            "http://www.nzjz-split.hr/zavod/index.php/2016-04-26-12-25-06/istakniti-clanci"
+        })
+        {
+            _log = log;
+        }
 
         public override Task<List<Article>> GetArticles(string url)
         {
+            _log.Info("NzjzScraper scraping " + url);
+
             return Task.Run(() =>
             {
                 var articles = new List<Article>();
@@ -49,10 +60,12 @@ namespace InfoWebApp.Scraper
                         text = psDetails.Aggregate(text,
                             (current, psDetail) => current + (psDetail.InnerText + Environment.NewLine)).Replace("&nbsp;", " ");
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        _log.Error("NzjzScraper error: " + ex.Message + Environment.NewLine + ex.StackTrace);
                     }
+
+                    _log.Info("NzjzScraper Creating " + title);
 
                     CreateArticle(text, articles, title, shortText, link, ArticleType.Nzjz, Convert.ToDateTime(DateTime.Today));
                 }

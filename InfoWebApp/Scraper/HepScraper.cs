@@ -6,15 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
 namespace InfoWebApp.Scraper
 {
     public class HepScraper : BaseScraper
     {
-        public HepScraper() : base( new[] {"http://www.hep.hr/ods/ostalo/poveznice/bez-struje/19?dp=split"})
-        {}
+        private readonly ILog _log;
+        public HepScraper(ILog log) : base(new[] {"http://www.hep.hr/ods/ostalo/poveznice/bez-struje/19?dp=split"})
+        {
+            _log = log;
+        }
         public override Task<List<Article>> GetArticles(string url)
         {
+            _log.Info("HepScraper scraping " + url);
+
             return Task.Run(() =>
             {
                 var articles = new List<Article>();
@@ -44,7 +50,9 @@ namespace InfoWebApp.Scraper
                         .Replace("&quot;", "\"").Replace('\t'.ToString(), "").Replace("    ", "");
 
                     var text = shortText;
-                    
+
+                    _log.Info("HepScraper Creating " + title);
+
                     CreateArticle(text, articles, title, shortText, link, ArticleType.Hep, Convert.ToDateTime(DateTime.Today));
                 }
 
