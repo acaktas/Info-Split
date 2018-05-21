@@ -237,6 +237,8 @@
     <Compile Include="Scheduler\ScraperJob.cs" />
     <Compile Include="Models\Article.cs" />
     <Compile Include="Scraper\ApnScraper.cs" />
+    <Compile Include="Scraper\DvCvitMediteranaScraper.cs" />
+    <Compile Include="Scraper\DvRadostScraper.cs" />
     <Compile Include="Scraper\HepScraper.cs" />
     <Compile Include="Scraper\BaseScraper.cs" />
     <Compile Include="Scraper\NzjzScraper.cs" />

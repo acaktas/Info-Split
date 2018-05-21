@@ -70,6 +70,10 @@ namespace InfoWebApp.Models
         [Description("Elektrodalmacija")]
         Hep,
         [Description("Agencija za pravni promet i posredovanje nekretninama")]
-        Apn
+        Apn,
+        [Description("Djecji vrtic Radost")]
+        DvRadost,
+        [Description("Djecji vrtic Cvit mediterana")]
+        DvCvitMediterana
     }
 }

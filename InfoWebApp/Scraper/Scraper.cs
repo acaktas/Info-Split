@@ -9,7 +9,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls.Expressions;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -24,10 +23,12 @@ namespace InfoWebApp.Scraper
             log.Info("Scraper started");
 
             var tasks = new List<Task<List<Article>>>();
-            tasks.AddRange(new ApnScraper(log).Scrape());
-            tasks.AddRange(new NzjzScraper(log).Scrape());
-            tasks.AddRange(new VikScraper(log).Scrape());
-            tasks.AddRange(new HepScraper(log).Scrape());
+            //tasks.AddRange(new ApnScraper(log).Scrape());
+            //tasks.AddRange(new NzjzScraper(log).Scrape());
+            //tasks.AddRange(new VikScraper(log).Scrape());
+            //tasks.AddRange(new HepScraper(log).Scrape());
+            //tasks.AddRange(new DvRadostScraper(log).Scrape());
+            tasks.AddRange(new DvCvitMediteranaScraper(log).Scrape());
 
             try
             {
