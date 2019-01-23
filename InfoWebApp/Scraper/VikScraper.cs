@@ -18,7 +18,8 @@ namespace InfoWebApp.Scraper
         public VikScraper(ILog log) : base(new[]
         {
             "http://www.vik-split.hr/aktualnosti/novosti",
-            "http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe"
+            "http://www.vik-split.hr/aktualnosti/obavijesti-o-prekidu-vodoopskrbe",
+            "http://www.vik-split.hr/aktualnosti/mutnoca-vode"
         })
         {
             _log = log;
@@ -71,6 +72,17 @@ namespace InfoWebApp.Scraper
                     _log.Info("VikScraper Creating " + title);
 
                     CreateArticle(text, articles, title, shortText, link.Value, ArticleType.Vik, date);
+                }
+
+                var documentsTable = homePage.Html.CssSelect("div.DNN_Documents > table > tr").ToArray().Skip(1);
+                foreach (var document in documentsTable)
+                {
+                    var title = document.CssSelect("td.NaslovCell > a").Single().InnerText.Replace("&nbsp;", " ");
+                    var text = "";
+                    var shortText = title;
+                    var link = "http://www.vik-split.hr/" + document.CssSelect("td.DownloadCell > a").Single().Attributes["href"].Value;
+
+                    CreateArticle(text, articles, title, shortText, link, ArticleType.Vik, Convert.ToDateTime(DateTime.Today));
                 }
 
                 return articles;

@@ -2,6 +2,7 @@
 using InfoWebApp.Hub;
 using InfoWebApp.Models;
 using Microsoft.AspNet.SignalR;
+using Slack.Webhooks;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -23,12 +24,13 @@ namespace InfoWebApp.Scraper
             log.Info("Scraper started");
 
             var tasks = new List<Task<List<Article>>>();
-            //tasks.AddRange(new ApnScraper(log).Scrape());
-            //tasks.AddRange(new NzjzScraper(log).Scrape());
-            //tasks.AddRange(new VikScraper(log).Scrape());
-            //tasks.AddRange(new HepScraper(log).Scrape());
+            tasks.AddRange(new ApnScraper(log).Scrape());
+            tasks.AddRange(new NzjzScraper(log).Scrape());
+            tasks.AddRange(new VikScraper(log).Scrape());
+            tasks.AddRange(new HepScraper(log).Scrape());
+
             //tasks.AddRange(new DvRadostScraper(log).Scrape());
-            tasks.AddRange(new DvCvitMediteranaScraper(log).Scrape());
+            //tasks.AddRange(new DvCvitMediteranaScraper(log).Scrape());
 
             try
             {
@@ -56,6 +58,7 @@ namespace InfoWebApp.Scraper
             log.Info("Found " + scrapedArticles.Count() + " from " + scrapedArticles.FirstOrDefault()?.ArticleType);
 
             var bot = new TelegramBotClient(ConfigurationManager.AppSettings["telegramBotClientAppKey"]);
+            var slack = new SlackClient(ConfigurationManager.AppSettings["slackBotClientChanelUrl"]);
             var hub = GlobalHost.ConnectionManager.GetHubContext<ArticleHub>();
 
             var thirtyDaysAgo = DateTime.Now.AddDays(-30);
@@ -74,19 +77,40 @@ namespace InfoWebApp.Scraper
                         continue;
                     }
 
-                    var sb = new StringBuilder();
-                    sb.Append(article.ArticleType + " - " + article.Title);
-                    sb.Append(Environment.NewLine + article.Link);
-
                     if (Convert.ToBoolean(ConfigurationManager.AppSettings["telegramBotEnabled"]))
                     {
+                        var sb = new StringBuilder();
+                        sb.Append(article.ArticleType + " - " + article.Title);
+                        sb.Append(Environment.NewLine + article.Link);
+
                         await bot.SendTextMessageAsync(ConfigurationManager.AppSettings["telegramBotClientChanel"],
-                            sb.ToString(),
-                            ParseMode.Markdown);
+                        sb.ToString(),
+                        Telegram.Bot.Types.Enums.ParseMode.Markdown);
+
 
                         log.Info("Message sent for article: " + article.Title);
 
                         article.IsSent = true;
+                    }
+
+                    if (Convert.ToBoolean(ConfigurationManager.AppSettings["slackBotEnabled"]))
+                    {
+                        await slack.PostAsync(new SlackMessage()
+                        {
+                            Channel = ConfigurationManager.AppSettings["slackBotClientChanel"],
+                            Text = article.ArticleType.ToString(),
+                            Username = "Web Scraping BOT",
+                            Attachments = new List<SlackAttachment>()
+                            {
+                                new SlackAttachment()
+                                {
+                                    Title =  article.Title,
+                                    TitleLink = article.Link,
+                                    Color = "warning",
+                                    Pretext = article.ShortText
+                                }
+                            }
+                        });
                     }
 
                     articleContext.Articles.Add(article);
