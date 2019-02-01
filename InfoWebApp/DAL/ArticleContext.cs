@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using InfoWebApp.Models;
+using Info.Models;
 
 namespace InfoWebApp.DAL
 {

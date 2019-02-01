@@ -1,6 +1,6 @@
 ﻿using System;
 using InfoWebApp.DAL;
-using InfoWebApp.Models;
+using Info.Models;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;

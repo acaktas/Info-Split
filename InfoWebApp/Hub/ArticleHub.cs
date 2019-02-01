@@ -1,4 +1,4 @@
-﻿using InfoWebApp.Models;
+﻿using Info.Models;
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace InfoWebApp.Hub

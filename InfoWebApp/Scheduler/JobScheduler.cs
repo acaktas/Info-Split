@@ -2,17 +2,18 @@
 using Quartz.Impl;
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace InfoWebApp.Scheduler
 {
-    public class JobScheduler
+    public static class JobScheduler
     {
-        public static void Schedule()
+        public static async Task ScheduleAsync()
         {
             var schedFact = new StdSchedulerFactory();
 
-            var scheduler = schedFact.GetScheduler();
-            scheduler.Start();
+            var scheduler = await schedFact.GetScheduler();
+            await scheduler.Start();
             
             var job = JobBuilder.Create<ScraperJob>().Build();
 
@@ -25,7 +26,7 @@ namespace InfoWebApp.Scheduler
                 )
                 .Build();
 
-            scheduler.ScheduleJob(job, trigger);
+            await scheduler.ScheduleJob(job, trigger);
         }
     }
 }

@@ -1,9 +1,10 @@
-﻿using Quartz;
+﻿using System.Threading.Tasks;
+using Quartz;
 
 namespace InfoWebApp.Scheduler
 {
     public class ScraperJob : IJob
     {
-        public void Execute(IJobExecutionContext context) => new Scraper.Scraper().Scrape().GetAwaiter();
+        Task IJob.Execute(IJobExecutionContext context) => new Scraper.Scraper().Scrape();
     }
 }
